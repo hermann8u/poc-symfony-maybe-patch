@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Application\Action\Company;
 
+use Application\Initializer;
 use Application\UseCase\Company\UpdateCompany\Handler;
 use Application\UseCase\Company\UpdateCompany\Input;
-use Application\Initializer;
 use Domain\Exception\EntityNotFoundException;
 use Maybe\Maybe;
 use Symfony\Component\HttpFoundation\Request;
@@ -84,24 +84,26 @@ final readonly class PatchCompanyAction
             ]),
         ]));
 
-        if ($violations->count() > 0) {
-            $content = $this->encoder->encode(
-                [
-                    'errors' => array_map(
-                        static fn (ConstraintViolation $e) => [
-                            'property' => $e->getPropertyPath(),
-                            'message' => $e->getMessage(),
-                        ],
-                        iterator_to_array($violations),
-                    )
-                ],
-                'json',
-            );
-
-            return new Response(
-                content: $content,
-                status: Response::HTTP_UNPROCESSABLE_ENTITY,
-            );
+        if ($violations->count() === 0) {
+            return null;
         }
+
+        $content = $this->encoder->encode(
+            [
+                'errors' => array_map(
+                    static fn (ConstraintViolation $e) => [
+                        'property' => $e->getPropertyPath(),
+                        'message' => $e->getMessage(),
+                    ],
+                    iterator_to_array($violations),
+                )
+            ],
+            'json',
+        );
+
+        return new Response(
+            content: $content,
+            status: Response::HTTP_UNPROCESSABLE_ENTITY,
+        );
     }
 }
