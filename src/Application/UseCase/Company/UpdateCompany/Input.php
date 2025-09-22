@@ -9,7 +9,6 @@ use Maybe\Maybe;
 final readonly class Input
 {
     /**
-     * @param int $id
      * @param Maybe<string> $name
      * @param Maybe<string|null> $phoneNumber
      * @param Maybe<string> $foundedAt

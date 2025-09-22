@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Application;
 
 use Maybe\Maybe;
+use Symfony\Component\HttpFoundation\InputBag;
 use function Symfony\Component\String\s;
 
 /**
@@ -16,10 +17,11 @@ final readonly class Initializer
      * @template T
      *
      * @param class-string<T> $inputClass
+     * @param array<string, mixed> $initialData
      *
      * @return T
      */
-    public function initialize(string $inputClass, array $data, ...$initialData): object
+    public function initialize(string $inputClass, InputBag $data, ...$initialData): object
     {
         $vars = array_keys(get_class_vars($inputClass));
 
@@ -32,7 +34,7 @@ final readonly class Initializer
                 continue;
             }
 
-            $finalData[$var] = \array_key_exists($key, $data) ? Maybe::just($data[$key]) : Maybe::nothing();
+            $finalData[$var] = $data->has($key) ? Maybe::just($data->get($key)) : Maybe::nothing();
         }
 
         try {

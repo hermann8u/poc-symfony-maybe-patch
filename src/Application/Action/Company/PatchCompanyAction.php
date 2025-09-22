@@ -9,10 +9,10 @@ use Application\UseCase\Company\UpdateCompany\Handler;
 use Application\UseCase\Company\UpdateCompany\Input;
 use Domain\Exception\EntityNotFoundException;
 use Maybe\Maybe;
+use Symfony\Component\HttpFoundation\InputBag;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Serializer\Encoder\DecoderInterface;
 use Symfony\Component\Serializer\Encoder\EncoderInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\ConstraintViolation;
@@ -25,7 +25,6 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 final readonly class PatchCompanyAction
 {
     public function __construct(
-        private DecoderInterface $decoder,
         private EncoderInterface $encoder,
         private ValidatorInterface $validator,
         private Initializer $initializer,
@@ -35,7 +34,7 @@ final readonly class PatchCompanyAction
 
     public function __invoke(Request $request, int $id): Response
     {
-        $data = $this->decoder->decode($request->getContent() ?: '{}', 'json');
+        $data = $request->getPayload();
 
         if ($violationResponse = $this->validate($data)) {
             return $violationResponse;
@@ -51,9 +50,9 @@ final readonly class PatchCompanyAction
         // Manually create Input DTO without Initializer
         $input = new Input(
             id: $id,
-            name: array_key_exists('name', $data) ? Maybe::just($data['name']) : Maybe::nothing(),
-            phoneNumber: array_key_exists('phone_number', $data) ? Maybe::just($data['phone_number']) : Maybe::nothing(),
-            foundedAt: array_key_exists('founded_at', $data) ? Maybe::just($data['founded_at']) : Maybe::nothing(),
+            name: $data->has('name') ? Maybe::just($data->get('name')) : Maybe::nothing(),
+            phoneNumber: $data->has('phone_number') ? Maybe::just($data->get('phone_number')) : Maybe::nothing(),
+            foundedAt: $data->has('founded_at') ? Maybe::just($data->get('founded_at')) : Maybe::nothing(),
         );
 
         try {
@@ -68,9 +67,9 @@ final readonly class PatchCompanyAction
         return new Response(status: Response::HTTP_NO_CONTENT);
     }
 
-    private function validate(array $data): ?Response
+    private function validate(InputBag $data): ?Response
     {
-        $violations = $this->validator->validate($data, new Assert\Collection([
+        $violations = $this->validator->validate($data->all(), new Assert\Collection([
             'name' => new Assert\Optional([
                 new Assert\NotBlank(),
             ]),
