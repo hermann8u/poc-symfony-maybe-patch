@@ -19,7 +19,7 @@ services:
             - '../src/Application/Action/'
 
     Application\Action\:
-        resource: '../src/Application/Action/'
+        resource: '../src/Application/Action/**/Action.php'
         tags: ['controller.service_arguments']
 
     Domain\:

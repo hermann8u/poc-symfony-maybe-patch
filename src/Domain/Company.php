@@ -20,7 +20,7 @@ class Company
     #[ORM\Column(length: 20, nullable: true)]
     private ?string $phoneNumber;
 
-    #[ORM\Column(type: 'datetime_immutable')]
+    #[ORM\Column(type: 'date_immutable')]
     private \DateTimeImmutable $foundedAt;
 
     #[ORM\Column(type: 'datetime_immutable')]

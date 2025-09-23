@@ -6,6 +6,7 @@ namespace Application\UseCase\Company\UpdateCompany;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Domain\CompanyRepository;
+use Domain\Exception\EntityNotFoundException;
 
 final readonly class Handler
 {
@@ -15,6 +16,9 @@ final readonly class Handler
     ) {
     }
 
+    /**
+     * @throws EntityNotFoundException
+     */
     public function handle(Input $input): void
     {
         $company = $this->companyRepository->get($input->id);

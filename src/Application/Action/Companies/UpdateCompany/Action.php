@@ -2,30 +2,29 @@
 
 declare(strict_types=1);
 
-namespace Application\Action\Company;
+namespace Application\Action\Companies\UpdateCompany;
 
+use Application\Http\Response\Content\ValidationErrorList;
 use Application\Initializer;
 use Application\UseCase\Company\UpdateCompany\Handler;
 use Application\UseCase\Company\UpdateCompany\Input;
 use Domain\Exception\EntityNotFoundException;
 use Maybe\Maybe;
 use Symfony\Component\HttpFoundation\InputBag;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Serializer\Encoder\EncoderInterface;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\ConstraintViolationInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route(
     '/companies/{id<\d+>}',
     methods: ['PATCH'],
 )]
-final readonly class PatchCompanyAction
+final readonly class Action
 {
     public function __construct(
-        private EncoderInterface $encoder,
         private ValidatorInterface $validator,
         private Initializer $initializer,
         private Handler $handler,
@@ -58,8 +57,8 @@ final readonly class PatchCompanyAction
         try {
             $this->handler->handle($input);
         } catch (EntityNotFoundException) {
-            return new Response(
-                content: json_encode(['error' => 'Company not found']),
+            return new JsonResponse(
+                data: ['error' => 'Company not found'],
                 status: Response::HTTP_NOT_FOUND,
             );
         }
@@ -87,21 +86,8 @@ final readonly class PatchCompanyAction
             return null;
         }
 
-        $content = $this->encoder->encode(
-            [
-                'errors' => array_map(
-                    static fn (ConstraintViolationInterface $e) => [
-                        'property' => $e->getPropertyPath(),
-                        'message' => $e->getMessage(),
-                    ],
-                    iterator_to_array($violations),
-                )
-            ],
-            'json',
-        );
-
-        return new Response(
-            content: $content,
+        return new JsonResponse(
+            data: ValidationErrorList::fromConstraintViolationLists($violations),
             status: Response::HTTP_UNPROCESSABLE_ENTITY,
         );
     }

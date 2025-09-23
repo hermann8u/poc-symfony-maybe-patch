@@ -32,10 +32,24 @@ final readonly class DoctrineCompanyRepository implements CompanyRepository
         }
     }
 
+    public function all(): array
+    {
+        $qb = $this->qb()
+            ->orderBy('c.createdAt', 'DESC')
+        ;
+
+        return $qb->getQuery()->getResult();
+    }
+
     private function qb(): QueryBuilder
     {
         return $this->em->createQueryBuilder()
             ->select('c')
             ->from(Company::class, 'c');
+    }
+
+    public function add(Company $company): void
+    {
+        $this->em->persist($company);
     }
 }
