@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Serializer\Encoder\EncoderInterface;
 use Symfony\Component\Validator\Constraints as Assert;
-use Symfony\Component\Validator\ConstraintViolation;
+use Symfony\Component\Validator\ConstraintViolationInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route(
@@ -50,9 +50,9 @@ final readonly class PatchCompanyAction
         // Manually create Input DTO without Initializer
         $input = new Input(
             id: $id,
-            name: $data->has('name') ? Maybe::just($data->get('name')) : Maybe::nothing(),
+            name: $data->has('name') ? Maybe::just($data->getString('name')) : Maybe::nothing(),
             phoneNumber: $data->has('phone_number') ? Maybe::just($data->get('phone_number')) : Maybe::nothing(),
-            foundedAt: $data->has('founded_at') ? Maybe::just($data->get('founded_at')) : Maybe::nothing(),
+            foundedAt: $data->has('founded_at') ? Maybe::just($data->getString('founded_at')) : Maybe::nothing(),
         );
 
         try {
@@ -75,7 +75,7 @@ final readonly class PatchCompanyAction
             ]),
             'phone_number' => new Assert\Optional([
                 new Assert\NotBlank(allowNull: true),
-                new Assert\Length(['max' => 15]),
+                new Assert\Length(max: 15),
             ]),
             'founded_at' => new Assert\Optional([
                 new Assert\NotBlank(),
@@ -90,7 +90,7 @@ final readonly class PatchCompanyAction
         $content = $this->encoder->encode(
             [
                 'errors' => array_map(
-                    static fn (ConstraintViolation $e) => [
+                    static fn (ConstraintViolationInterface $e) => [
                         'property' => $e->getPropertyPath(),
                         'message' => $e->getMessage(),
                     ],

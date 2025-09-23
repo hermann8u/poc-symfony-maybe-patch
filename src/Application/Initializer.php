@@ -14,7 +14,7 @@ use function Symfony\Component\String\s;
 final readonly class Initializer
 {
     /**
-     * @template T
+     * @template T of object
      *
      * @param class-string<T> $inputClass
      * @param array<string, mixed> $initialData

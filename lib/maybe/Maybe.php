@@ -21,9 +21,11 @@ final readonly class Maybe
     }
 
     /**
-     * @param T $value
+     * @template U of mixed
      *
-     * @return Maybe<T>
+     * @param U $value
+     *
+     * @return self<U>
      */
     public static function just(mixed $value): Maybe
     {
@@ -34,7 +36,7 @@ final readonly class Maybe
     }
 
     /**
-     * @return Maybe<T>
+     * @return self<T>
      */
     public static function nothing(): Maybe
     {
@@ -46,7 +48,7 @@ final readonly class Maybe
      *
      * @param callable(T): U $fn
      *
-     * @return Maybe<U>
+     * @return self<U>
      */
     public function map(callable $fn): Maybe
     {

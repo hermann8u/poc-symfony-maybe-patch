@@ -24,9 +24,11 @@ final class MaybeStaticReflection
     }
 
     /**
-     * @param T $value
+     * @template U of mixed
      *
-     * @return Maybe<T>
+     * @param U $value
+     *
+     * @return self<U>
      */
     public static function just(mixed $value): MaybeStaticReflection
     {
@@ -37,7 +39,7 @@ final class MaybeStaticReflection
     }
 
     /**
-     * @return Maybe<T>
+     * @return self<T>
      */
     public static function nothing(): MaybeStaticReflection
     {
@@ -49,7 +51,7 @@ final class MaybeStaticReflection
      *
      * @param callable(T): U $fn
      *
-     * @return Maybe<U>
+     * @return self<U>
      */
     public function map(callable $fn): MaybeStaticReflection
     {
@@ -78,6 +80,9 @@ final class MaybeStaticReflection
         return self::instanceHasValue($this) ? $this->value : $defaultValue;
     }
 
+    /**
+     * @param self<T> $instance
+     */
     private static function instanceHasValue(self $instance): bool
     {
         $valuePropertyReflection = self::$reflectionProperty ??= new ReflectionProperty(self::class, 'value');

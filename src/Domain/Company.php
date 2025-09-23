@@ -46,11 +46,9 @@ class Company
         return $this->name;
     }
 
-    public function changeName(string $name): self
+    public function changeName(string $name): void
     {
         $this->name = $name;
-
-        return $this;
     }
 
     public function getPhoneNumber(): ?string
@@ -58,18 +56,14 @@ class Company
         return $this->phoneNumber;
     }
 
-    public function changePhoneNumber(string $phoneNumber): self
+    public function changePhoneNumber(string $phoneNumber): void
     {
         $this->phoneNumber = $phoneNumber;
-
-        return $this;
     }
 
-    public function removePhoneNumber(): self
+    public function removePhoneNumber(): void
     {
         $this->phoneNumber = null;
-
-        return $this;
     }
 
     public function getFoundedAt(): \DateTimeImmutable
@@ -77,11 +71,9 @@ class Company
         return $this->foundedAt;
     }
 
-    public function updateFoundedAt(\DateTimeImmutable $foundedAt): self
+    public function updateFoundedAt(\DateTimeImmutable $foundedAt): void
     {
         $this->foundedAt = $foundedAt;
-
-        return $this;
     }
 
     public function getCreatedAt(): \DateTimeImmutable
