@@ -21,10 +21,11 @@ final readonly class Handler
 
         $input->name->do(static fn (string $name) => $company->changeName($name));
 
-        $input->phoneNumber->do(static fn (?string $phoneNumber) => \is_string($phoneNumber)
-            ? $company->changePhoneNumber($phoneNumber)
-            : $company->removePhoneNumber()
-        );
+        $input->phoneNumber->do(static function (?string $phoneNumber) use ($company) {
+            \is_string($phoneNumber)
+                ? $company->changePhoneNumber($phoneNumber)
+                : $company->removePhoneNumber();
+        });
 
         $input->foundedAt
             ->map(static fn (string $foundedAt) => \DateTimeImmutable::createFromFormat('!Y-m-d', $foundedAt))
