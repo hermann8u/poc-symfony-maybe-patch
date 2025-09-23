@@ -4,20 +4,19 @@ declare(strict_types=1);
 
 namespace Maybe;
 
-use ReflectionProperty;
-
 /**
+ * This Maybe implementation use catchable error to check property initialization.
+ *
  * @see https://hackernoon.com/say-goodbye-to-null-checking-and-exceptions-using-the-maybe-monad-in-symfony
  * @see https://marcosh.github.io/post/2017/06/16/maybe-in-php.html
  * @see https://github.com/php-fp/php-fp-maybe
  *
  * @template T of mixed
  */
-final class MaybeStaticReflection
+final readonly class MaybeCatchError
 {
     /** @var T */
-    private readonly mixed $value;
-    private static ReflectionProperty $reflectionProperty;
+    private mixed $value;
 
     private function __construct()
     {
@@ -30,7 +29,7 @@ final class MaybeStaticReflection
      *
      * @return self<U>
      */
-    public static function just(mixed $value): MaybeStaticReflection
+    public static function just(mixed $value): MaybeCatchError
     {
         $self = new self();
         $self->value = $value;
@@ -41,7 +40,7 @@ final class MaybeStaticReflection
     /**
      * @return self<T>
      */
-    public static function nothing(): MaybeStaticReflection
+    public static function nothing(): MaybeCatchError
     {
         return new self();
     }
@@ -53,9 +52,9 @@ final class MaybeStaticReflection
      *
      * @return self<U>
      */
-    public function map(callable $fn): MaybeStaticReflection
+    public function map(callable $fn): MaybeCatchError
     {
-        return self::instanceHasValue($this) ? self::just($fn($this->value)) : self::nothing();
+        return $this->hasValue() ? self::just($fn($this->value)) : self::nothing();
     }
 
     /**
@@ -63,7 +62,7 @@ final class MaybeStaticReflection
      */
     public function do(callable $fn): void
     {
-        if (!self::instanceHasValue($this)) {
+        if (!$this->hasValue()) {
             return;
         }
 
@@ -77,16 +76,17 @@ final class MaybeStaticReflection
      */
     public function getOrElse(mixed $defaultValue): mixed
     {
-        return self::instanceHasValue($this) ? $this->value : $defaultValue;
+        return $this->hasValue() ? $this->value : $defaultValue;
     }
 
-    /**
-     * @param self<T> $instance
-     */
-    private static function instanceHasValue(self $instance): bool
+    private function hasValue(): bool
     {
-        $valuePropertyReflection = self::$reflectionProperty ??= new ReflectionProperty(self::class, 'value');
+        try {
+            $this->value;
 
-        return $valuePropertyReflection->isInitialized($instance);
+            return true;
+        } catch (\Error) {
+            return false;
+        }
     }
 }

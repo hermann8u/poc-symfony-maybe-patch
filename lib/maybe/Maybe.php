@@ -4,20 +4,27 @@ declare(strict_types=1);
 
 namespace Maybe;
 
+use ReflectionProperty;
+
 /**
+ * This Maybe implementation use reflection in order to check property initialization.
+ *
  * @see https://hackernoon.com/say-goodbye-to-null-checking-and-exceptions-using-the-maybe-monad-in-symfony
  * @see https://marcosh.github.io/post/2017/06/16/maybe-in-php.html
  * @see https://github.com/php-fp/php-fp-maybe
  *
  * @template T of mixed
  */
-final readonly class Maybe
+final class Maybe
 {
     /** @var T */
-    private mixed $value;
+    private readonly mixed $value;
+    private static ReflectionProperty $valueReflectionProperty;
 
     private function __construct()
     {
+        // Initialize reflection property only once
+        self::$valueReflectionProperty ??= new ReflectionProperty(self::class, 'value');
     }
 
     /**
@@ -52,7 +59,7 @@ final readonly class Maybe
      */
     public function map(callable $fn): Maybe
     {
-        return $this->hasValue() ? self::just($fn($this->value)) : self::nothing();
+        return self::instanceHasValue($this) ? self::just($fn($this->value)) : self::nothing();
     }
 
     /**
@@ -60,7 +67,7 @@ final readonly class Maybe
      */
     public function do(callable $fn): void
     {
-        if (!$this->hasValue()) {
+        if (!self::instanceHasValue($this)) {
             return;
         }
 
@@ -74,17 +81,14 @@ final readonly class Maybe
      */
     public function getOrElse(mixed $defaultValue): mixed
     {
-        return $this->hasValue() ? $this->value : $defaultValue;
+        return self::instanceHasValue($this) ? $this->value : $defaultValue;
     }
 
-    private function hasValue(): bool
+    /**
+     * @param self<T> $instance
+     */
+    private static function instanceHasValue(self $instance): bool
     {
-        try {
-            $this->value;
-
-            return true;
-        } catch (\Error) {
-            return false;
-        }
+        return self::$valueReflectionProperty->isInitialized($instance);
     }
 }
